@@ -2,7 +2,7 @@
 pragma solidity ^0.8.24;
 import {IERC20,SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-contract MakeAirdrop{
+contract MerkleAirdrop{
     using SafeERC20 for IERC20;
 
 
@@ -17,17 +17,17 @@ contract MakeAirdrop{
         I_markleRoot = markleRoot;
         I_token = token;
     }
-    function claim(uint256 amount,bytes32[] calldata proof) external {
-        if(claimed[msg.sender]){
+    function claim(address account,uint256 amount,bytes32[] calldata proof) external {
+        if(claimed[account]){
             revert AlreadyClaimed();
         }
-        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(msg.sender,amount))));
+        bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(account,amount))));
         if(!MerkleProof.verify(proof,I_markleRoot,leaf)){
             revert InvalidProof();
         }
-        claimed[msg.sender] = true;
-        emit Claimed(msg.sender,amount);
-        I_token.safeTransfer(msg.sender,amount);
+        claimed[account] = true;
+        emit Claimed(account,amount);
+        I_token.safeTransfer(account,amount);
     }
     function  getMarkleRoot() external view returns(bytes32){
         return I_markleRoot;
